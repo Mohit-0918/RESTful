@@ -74,7 +74,30 @@ def delete_task(task_id):
         return jsonify({'message': 'Task deleted successfully'})
     return jsonify({'message': 'Task not found'}), 404
 
-
+#method for getting all the task with paginated results
+@app.route('/tasks', methods=['GET'])
+def list_tasks():
+    page = request.args.get('page', default=1, type=int)
+    per_page = request.args.get('per_page', default=10, type=int)
+    tasks = Task.query.paginate(page, per_page, error_out=False)
+    task_list = []
+    for task in tasks.items:
+        task_data = {
+            'id': task.id,
+            'title': task.title,
+            'description': task.description,
+            'due_date': task.due_date,
+            'status': task.status
+        }
+        task_list.append(task_data)
+    result = {
+        'tasks': task_list,
+        'page': tasks.page,
+        'per_page': tasks.per_page,
+        'total_pages': tasks.pages,
+        'total_tasks': tasks.total
+    }
+    return jsonify(result)
 
 
 @app.errorhandler(400)
